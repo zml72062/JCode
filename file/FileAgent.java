@@ -22,6 +22,46 @@ public class FileAgent {
     }
 
     /**
+     * Create a new empty file that is not associated with any file on
+     * disk.
+     */
+    public void create() {
+        content = new StringBuilder();
+        dirty = true;
+    }
+
+    /**
+     * If the {@code FileAgent} object is not associated with any file,
+     * then associate it with the file at the given {@code path}, and 
+     * save content to that file.
+     * @param path path to the file
+     * @throws IOException
+     */
+    public void saveAs(String path) throws IOException {
+        if (file != null)
+            return;
+        file = new File(path);
+        write();
+    }
+
+    /**
+     * Generate a new file at {@code path} with the same content as the
+     * current one. Return a {@code FileAgent} object corresponding to
+     * the new file.
+     * @param path path to the new file
+     * @return the {@code FileAgent} object corresponding to the new file
+     * @throws IOException
+     */
+    public FileAgent forkAs(String path) throws IOException {
+        var newAgent = new FileAgent();
+        newAgent.open(path);
+        newAgent.content = new StringBuilder(content);
+        newAgent.write();
+
+        return newAgent;
+    }
+
+    /**
      * Read {@code file} into the {@code StringBuilder} {@code content};
      * @throws IOException
      */
@@ -62,6 +102,8 @@ public class FileAgent {
     }
 
     public String getContent() {
+        if (content == null)
+            return null;
         return content.toString();
     }
 

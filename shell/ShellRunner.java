@@ -15,9 +15,14 @@ public class ShellRunner {
     private Scanner shellOutput;
     private OutputStreamWriter shellInput;
     private String shellPath;
+    private String workingDirectory;
 
     public ShellRunner(String shellPath) {
         this.shellPath = Objects.requireNonNull(shellPath);
+    }
+
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
     }
 
     /**
@@ -25,8 +30,11 @@ public class ShellRunner {
      * @throws IOException if an I/O error occurs
      */
     public void spawnShell() throws IOException {
+        if (workingDirectory == null)
+            workingDirectory = ".";
+
         ProcessBuilder pb = new ProcessBuilder(shellPath)
-            .directory(new File("."))
+            .directory(new File(workingDirectory))
             .redirectErrorStream(true);
 
         // there should be no shell running previously

@@ -31,7 +31,7 @@ public class FileOperations {
                 in.read(data);
             } else {
                 data = in.readAllBytes();
-            }            
+            }
         }
 
         String s = new String(data, DEFAULT_CHARSET);
@@ -42,7 +42,7 @@ public class FileOperations {
 
         // Find the percentage of text signs
         double d = (double)(s.length() - s2.length()) / (double)(s.length());
-            
+        
         return d > MIN_TEXT_SIGN_PERCENTAGE;
     }
 
