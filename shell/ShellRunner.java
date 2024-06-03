@@ -62,6 +62,10 @@ public class ShellRunner {
     public void runCommand(Supplier<String> commandSupplier)
         throws IOException {
         String command = commandSupplier.get();
+        
+        if (command == null)
+            return;
+
         synchronized (shellInput) {
             shellInput.write(command + "\n" + 
                             "__pwd__=$(pwd); echo $__pwd__' >'\n");

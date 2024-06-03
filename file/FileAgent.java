@@ -101,6 +101,10 @@ public class FileAgent {
         return dirty;
     }
 
+    public File getFile() {
+        return file;
+    }
+
     public String getContent() {
         if (content == null)
             return null;
@@ -131,58 +135,60 @@ public class FileAgent {
         file = null;
         content = null;
     }
+
+
+    /**
+     * Thrown by a {@code FileAgent} object when trying to operate
+     * a non-text file.
+     */
+    public class NotTextFileException extends IOException {
+        /**
+         * Constructs a {@code NotTextFileException} with
+         * {@code null} as its error detail message.
+         */
+        public NotTextFileException() {
+            super();
+        }
+
+        /**
+         * Constructs a {@code NotTextFileException} with the
+         * specified detail message. The string {@code s} can be
+         * retrieved later by the
+         * {@link java.lang.Throwable#getMessage}
+         * method of class {@code java.lang.Throwable}.
+         *
+         * @param   s   the detail message.
+         */
+        public NotTextFileException(String s) {
+            super(s);
+        }
+    }
+
+    /**
+     * Thrown by a {@code FileAgent} object when trying to operate
+     * an empty file.
+     */
+    public class EmptyFileException extends IOException {
+        /**
+         * Constructs a {@code EmptyFileException} with
+         * {@code null} as its error detail message.
+         */
+        public EmptyFileException() {
+            super();
+        }
+
+        /**
+         * Constructs a {@code EmptyFileException} with the
+         * specified detail message. The string {@code s} can be
+         * retrieved later by the
+         * {@link java.lang.Throwable#getMessage}
+         * method of class {@code java.lang.Throwable}.
+         *
+         * @param   s   the detail message.
+         */
+        public EmptyFileException(String s) {
+            super(s);
+        }
+    }
 }
 
-/**
- * Thrown by a {@code FileAgent} object when trying to operate
- * a non-text file.
- */
-class NotTextFileException extends IOException {
-    /**
-     * Constructs a {@code NotTextFileException} with
-     * {@code null} as its error detail message.
-     */
-    public NotTextFileException() {
-        super();
-    }
-
-    /**
-     * Constructs a {@code NotTextFileException} with the
-     * specified detail message. The string {@code s} can be
-     * retrieved later by the
-     * {@link java.lang.Throwable#getMessage}
-     * method of class {@code java.lang.Throwable}.
-     *
-     * @param   s   the detail message.
-     */
-    public NotTextFileException(String s) {
-        super(s);
-    }
-}
-
-/**
- * Thrown by a {@code FileAgent} object when trying to operate
- * an empty file.
- */
-class EmptyFileException extends IOException {
-    /**
-     * Constructs a {@code EmptyFileException} with
-     * {@code null} as its error detail message.
-     */
-    public EmptyFileException() {
-        super();
-    }
-
-    /**
-     * Constructs a {@code EmptyFileException} with the
-     * specified detail message. The string {@code s} can be
-     * retrieved later by the
-     * {@link java.lang.Throwable#getMessage}
-     * method of class {@code java.lang.Throwable}.
-     *
-     * @param   s   the detail message.
-     */
-    public EmptyFileException(String s) {
-        super(s);
-    }
-}

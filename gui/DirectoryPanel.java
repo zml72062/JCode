@@ -6,6 +6,7 @@ import java.util.List;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.*;
+import gui.JCodeMenuBar.OpenFolderAction;
 import file.FileEnumerator;
 import file.FileEnumerator.DirectoryListData;
 
@@ -54,7 +55,7 @@ public abstract class DirectoryPanel extends JPanel {
         // Add inner components
         initializeFileChooser();
         initializeLabel();
-        initializeButtons();
+        initializeButton();
         add(
             new JPanel() {
                 {
@@ -69,6 +70,10 @@ public abstract class DirectoryPanel extends JPanel {
     public Dimension getPreferredSize() {
         return new Dimension(Parameters.DIRECTORY_PANEL_WIDTH,
                              Parameters.FRAME_HEIGHT);
+    }
+
+    public JFileChooser getFileChooser() {
+        return chooser;
     }
 
     private void initializeFileChooser() {
@@ -93,7 +98,7 @@ public abstract class DirectoryPanel extends JPanel {
         };
     }
 
-    private void initializeButtons() {
+    private void initializeButton() {
         // Put button below {@code innerPanel}
         openFolderButton = new JButton("Open Folder...");
         openFolderButton.setFont(
@@ -101,23 +106,7 @@ public abstract class DirectoryPanel extends JPanel {
         );
 
         // Set action listener
-        openFolderButton.addActionListener(e -> {
-            int result = chooser.showOpenDialog(this);
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File directory = chooser.getSelectedFile();
-                chooser.validate();
-
-                try {
-                    setRootPath(directory);
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(
-                        this, "Error: Fail to open folder!", 
-                        "Open folder error", JOptionPane.ERROR_MESSAGE
-                    );
-                }
-            }
-        });
+        openFolderButton.addActionListener(new OpenFolderAction("", this));
     }
 
     /**
@@ -127,7 +116,7 @@ public abstract class DirectoryPanel extends JPanel {
      * directory structure
      * @throws IOException
      */
-    private void setRootPath(File rootPath) throws IOException {
+    public void setRootPath(File rootPath) throws IOException {
         root = new File(rootPath.getCanonicalPath());
         rootNode = new DefaultMutableTreeNode(root);
 
@@ -174,6 +163,10 @@ public abstract class DirectoryPanel extends JPanel {
         new DirectoryListWorker(root, rootNode, tree).execute();
     }
 
+    public File getRootPath() {
+        return root;
+    }
+
     private class DirectoryListWorker 
         extends SwingWorker<Object, DirectoryListData> {
         private HashMap<File, DefaultMutableTreeNode> nodeMap;
@@ -196,9 +189,7 @@ public abstract class DirectoryPanel extends JPanel {
         }
 
         public void process(List<DirectoryListData> chunks) {
-            int size = chunks.size();
-            for (int i = 0; i < size; i++) {
-                DirectoryListData result = chunks.get(i);
+            for (var result: chunks) {
                 DefaultMutableTreeNode rootNode = nodeMap.get(result.root);
     
                 for (File child: result.children) {

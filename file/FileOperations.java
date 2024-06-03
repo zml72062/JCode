@@ -35,6 +35,10 @@ public class FileOperations {
         }
 
         String s = new String(data, DEFAULT_CHARSET);
+
+        if (s.length() == 0)
+            return true;
+
         // Delete all text signs
         String s2 = s.replaceAll("[a-zA-Z0-9ßöäü\\.\\*!\"§\\$\\%&/()=\\?@~'#:,;\\"  +
                                  "+><\\|\\[\\]\\{\\}\\^°²³\\\\ \\n\\r\\t_\\-`´âêîô" +
@@ -55,9 +59,10 @@ public class FileOperations {
      * elsewhere in the method
      */
     public static byte[] readFile(File file) throws IOException {
-        long fileSize = file.length();
-        if (fileSize == 0)
+        if (!file.exists() || file.isDirectory())
             throw new NoSuchFileException(file.getName());
+
+        long fileSize = file.length();
         if (fileSize > Integer.MAX_VALUE)
             throw new IOException(
                 String.format("File %s too long!", file.getName()));
