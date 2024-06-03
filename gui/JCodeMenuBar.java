@@ -1,13 +1,17 @@
 package gui;
 
 import java.io.*;
+import java.awt.Toolkit;
 import java.awt.event.*;
 import javax.swing.*;
 import gui.TextEditorPanel.*;
 
 public class JCodeMenuBar extends JMenuBar {
+    private static final int MASK = 
+        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
     private TextEditorPanel textEditorPanel;
     private DirectoryPanel directoryPanel;
+    private ShellPanel shellPanel;
     public JMenuItem newItem;
     public JMenuItem openItem;
     public JMenuItem openReadOnlyItem;
@@ -16,12 +20,16 @@ public class JCodeMenuBar extends JMenuBar {
     public JMenuItem saveAsItem;
     public JMenuItem closeItem;
     public JMenuItem exitItem;
+    public JMenuItem newTerminalItem;
 
     public JCodeMenuBar(TextEditorPanel textEditorPanel,
-                        DirectoryPanel directoryPanel) {
+                        DirectoryPanel directoryPanel,
+                        ShellPanel shellPanel) {
         this.textEditorPanel = textEditorPanel;
         this.directoryPanel = directoryPanel;
+        this.shellPanel = shellPanel;
         initializeFileMenu();
+        initializeTerminalMenu();
     }
 
     private void initializeFileMenu() {
@@ -32,6 +40,7 @@ public class JCodeMenuBar extends JMenuBar {
                 textEditorPanel.create();
             }
         });
+        newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, MASK));
 
         fileMenu.addSeparator();
 
@@ -43,6 +52,7 @@ public class JCodeMenuBar extends JMenuBar {
                         textEditorPanel.openChooser.getSelectedFile(), false);
             }
         });
+        openItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, MASK));
 
         openReadOnlyItem = fileMenu.add(new AbstractAction("Open Read-only...") {
             public void actionPerformed(ActionEvent e) {
@@ -70,6 +80,7 @@ public class JCodeMenuBar extends JMenuBar {
                 }
             }            
         });
+        saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, MASK));
         saveItem.setEnabled(false);
 
         saveAsItem = fileMenu.add(new AbstractAction("Save As...") {
@@ -84,6 +95,8 @@ public class JCodeMenuBar extends JMenuBar {
                 }
             }
         });
+        saveAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, 
+                                                         MASK | KeyEvent.SHIFT_DOWN_MASK));
         saveAsItem.setEnabled(false);
 
         fileMenu.addSeparator();
@@ -93,6 +106,7 @@ public class JCodeMenuBar extends JMenuBar {
                 textEditorPanel.save(SaveOption.CLOSE);
             } 
         });
+        closeItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, MASK));
         closeItem.setEnabled(false);
 
         fileMenu.addSeparator();
@@ -138,6 +152,18 @@ public class JCodeMenuBar extends JMenuBar {
         });
 
         add(fileMenu);
+    }
+
+    private void initializeTerminalMenu() {
+        var terminalMenu = new JMenu("Terminal");
+        newTerminalItem = terminalMenu.add(new AbstractAction("New Terminal") {
+            public void actionPerformed(ActionEvent e) {
+                shellPanel.spawnShell();
+            }
+        });
+        newTerminalItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, MASK));
+
+        add(terminalMenu);
     }
 
     public static class OpenFolderAction extends AbstractAction {

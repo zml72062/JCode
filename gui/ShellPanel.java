@@ -141,6 +141,7 @@ public abstract class ShellPanel extends JPanel {
         );
         
         shellPane.add(SHELL_PATH, scrollableTextArea);
+        shellPane.setSelectedComponent(scrollableTextArea);
         shellDaemon.execute();
     }
 

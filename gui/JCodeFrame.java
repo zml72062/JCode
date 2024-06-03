@@ -7,6 +7,7 @@ import javax.swing.*;
 public class JCodeFrame extends JFrame {
     private DirectoryPanel directoryPanel;
     private TextEditorPanel textEditorPanel;
+    private ShellPanel shellPanel;
     private JCodeMenuBar menuBar;
 
     public JCodeFrame() {
@@ -15,14 +16,14 @@ public class JCodeFrame extends JFrame {
         
         add(directoryPanel = new DirectoryPanel() {
             public void actionOnSelectingFile(File file) {
-                System.out.println(file);
+                textEditorPanel.open(file, false);
             }
         }, BorderLayout.WEST);
 
         add(new JPanel() {
             {
                 setLayout(new BorderLayout());
-                add(new ShellPanel() {
+                add(shellPanel = new ShellPanel() {
                     public void actionOnCommandExecution() {
                         File rootPath;
                         if ((rootPath = directoryPanel.getRootPath()) != null) {
@@ -61,7 +62,9 @@ public class JCodeFrame extends JFrame {
             }
         }, BorderLayout.CENTER);
 
-        setJMenuBar(menuBar = new JCodeMenuBar(textEditorPanel, directoryPanel));
+        setJMenuBar(menuBar = new JCodeMenuBar(textEditorPanel, 
+                                               directoryPanel,
+                                               shellPanel));
         pack();
     }
 }
