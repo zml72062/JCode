@@ -46,10 +46,11 @@ public class ShellRunner {
         shellInput = new OutputStreamWriter(shell.getOutputStream());
 
         // print current working directory
-        synchronized (shellInput) {
-            shellInput.write("__pwd__=$(pwd); echo $__pwd__' >'\n");
-            shellInput.flush();
-        }
+        if (gui.ShellPanel.SHELL_PATH.equals("/bin/bash"))
+            synchronized (shellInput) {
+                shellInput.write("__pwd__=$(pwd); echo $__pwd__' >'\n");
+                shellInput.flush();
+            }
     }
 
     /**
@@ -67,8 +68,11 @@ public class ShellRunner {
             return;
 
         synchronized (shellInput) {
-            shellInput.write(command + "\n" + 
-                            "__pwd__=$(pwd); echo $__pwd__' >'\n");
+            if (gui.ShellPanel.SHELL_PATH.equals("/bin/bash"))
+                shellInput.write(command + "\n" + 
+                                "__pwd__=$(pwd); echo $__pwd__' >'\n");
+            else
+                shellInput.write(command + "\n");
             shellInput.flush();
         }
     }

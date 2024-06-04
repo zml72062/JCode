@@ -12,7 +12,9 @@ import shell.ShellRunner;
 public abstract class ShellPanel extends JPanel {
     private JTabbedPane shellPane;
 
-    public static final String SHELL_PATH = "/bin/sh";
+    public static final String SHELL_PATH = 
+        System.getProperty("os.name").toLowerCase().contains("windows") ?
+        "cmd.exe" : "/bin/bash";
 
     /**
      * Every time a command is executed in the shell, something may need

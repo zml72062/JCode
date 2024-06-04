@@ -228,7 +228,7 @@ public abstract class TextEditorPanel extends JPanel {
         }
 
         public int hashCode() {
-            return Objects.hash(untitledNumber, file);
+            return toString().hashCode();
         }
     }
 
