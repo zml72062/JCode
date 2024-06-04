@@ -49,6 +49,18 @@ public class Prettifier {
 
         }
 
+        // Color strings
+        // ref: https://stackoverflow.com/questions/18547501/regex-to-replace-all-string-literals-in-a-java-file
+        Matcher stringMatcher = Pattern.compile("\"(?:\\\\\"|[^\"])*?\"").matcher(text);
+        var stringAttributeSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(stringAttributeSet, Color.MAGENTA.darker());
+        while (stringMatcher.find()) {
+            int stringBegin = stringMatcher.start();
+            int stringEnd = stringMatcher.end();
+            document.setCharacterAttributes(stringBegin, stringEnd - stringBegin, 
+                stringAttributeSet, true);
+        }
+
         // Color keywords
         Matcher wordMatcher = Pattern.compile("(\\w+)").matcher(text);
         var keywordAttributeSet = new SimpleAttributeSet();
@@ -71,6 +83,28 @@ public class Prettifier {
             if (!isKeyword(methodMatcher.group(1)))
                 document.setCharacterAttributes(methodBegin, methodEnd - methodBegin, 
                     methodAttributeSet, true);
+        }
+
+        // Color comments
+        var commentAttributeSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(commentAttributeSet, Color.ORANGE.darker());
+
+        // ref: https://stackoverflow.com/questions/13014947/regex-to-match-a-c-style-multiline-comment
+        Matcher blockCommentMatcher = Pattern.compile("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/").matcher(text);
+        while (blockCommentMatcher.find()) {
+            int blockCommentBegin = blockCommentMatcher.start();
+            int blockCommentEnd = blockCommentMatcher.end();
+            document.setCharacterAttributes(blockCommentBegin, 
+                blockCommentEnd - blockCommentBegin, 
+                commentAttributeSet, true);
+        }
+        Matcher lineCommentMatcher = Pattern.compile("//.*").matcher(text);
+        while (lineCommentMatcher.find()) {
+            int lineCommentBegin = lineCommentMatcher.start();
+            int lineCommentEnd = lineCommentMatcher.end();
+            document.setCharacterAttributes(lineCommentBegin, 
+                lineCommentEnd - lineCommentBegin, 
+                commentAttributeSet, true);
         }
     }
 

@@ -268,13 +268,10 @@ public class JCodeMenuBar extends JMenuBar {
         }
  
         protected void updateUndoState() {
-            if (undo.canUndo()) {
+            if (undo.canUndo())
                 setEnabled(true);
-                putValue(Action.NAME, undo.getUndoPresentationName());
-            } else {
+            else 
                 setEnabled(false);
-                putValue(Action.NAME, "Undo");
-            }
         }
     }
  
@@ -295,13 +292,10 @@ public class JCodeMenuBar extends JMenuBar {
         }
  
         protected void updateRedoState() {
-            if (undo.canRedo()) {
+            if (undo.canRedo())
                 setEnabled(true);
-                putValue(Action.NAME, undo.getRedoPresentationName());
-            } else {
+            else
                 setEnabled(false);
-                putValue(Action.NAME, "Redo");
-            }
         }
     }
 }
