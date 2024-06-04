@@ -3,6 +3,7 @@ package gui;
 import java.io.*;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.event.UndoableEditEvent;
 
 public class JCodeFrame extends JFrame {
     private DirectoryPanel directoryPanel;
@@ -51,13 +52,29 @@ public class JCodeFrame extends JFrame {
                         menuBar.saveItem.setEnabled(true);
                         menuBar.saveAsItem.setEnabled(true);
                         menuBar.closeItem.setEnabled(true);
-                    };
+                        menuBar.undoItem.setEnabled(true);
+                        menuBar.redoItem.setEnabled(true);
+                        menuBar.cutItem.setEnabled(true);
+                        menuBar.copyItem.setEnabled(true);
+                        menuBar.pasteItem.setEnabled(true);
+                    }
 
                     public void actionOnZeroTabs() {
                         menuBar.saveItem.setEnabled(false);
                         menuBar.saveAsItem.setEnabled(false);
                         menuBar.closeItem.setEnabled(false);
-                    };
+                        menuBar.undoItem.setEnabled(false);
+                        menuBar.redoItem.setEnabled(false);
+                        menuBar.cutItem.setEnabled(false);
+                        menuBar.copyItem.setEnabled(false);
+                        menuBar.pasteItem.setEnabled(false);
+                    }
+
+                    public void undoableEditHappened(UndoableEditEvent e) {
+                        menuBar.undo.addEdit(e.getEdit());
+                        menuBar.undoAction.updateUndoState();
+                        menuBar.redoAction.updateRedoState();
+                    }
                 }, BorderLayout.CENTER);
             }
         }, BorderLayout.CENTER);

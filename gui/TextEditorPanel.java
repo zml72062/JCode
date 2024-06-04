@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.*;
 import file.FileAgent;
 import file.FileAgent.NotTextFileException;
 
@@ -15,7 +17,7 @@ public abstract class TextEditorPanel extends JPanel {
     private final HashMap<EditorIdentifier, EditorContentManager> 
         managerMap = new HashMap<>();
     private NamedScrollPane currentCreatingPane;
-    private JTextArea currentCreatingTextArea;
+    private JTextPane currentCreatingTextArea;
     private JFileChooser saveChooser;
     
     public JFileChooser openChooser;
@@ -41,6 +43,12 @@ public abstract class TextEditorPanel extends JPanel {
      * becomes zero.
      */
     public abstract void actionOnZeroTabs();
+
+    /**
+     * Implement this abstract method to provide {@code UndoableEditListener}
+     * for document.
+     */
+    public abstract void undoableEditHappened(UndoableEditEvent e);
 
     public TextEditorPanel() {
         setLayout(new BorderLayout());
@@ -153,20 +161,35 @@ public abstract class TextEditorPanel extends JPanel {
     }
 
     private void createEditorTab(int untitledNumber, File file) {
-        // Create text area
-        currentCreatingTextArea = new JTextArea(0, 0);
+        // Create text area with line wrap disabled
+        // ref: https://www.coderanch.com/t/332983/java/Stop-text-wrapping
+        currentCreatingTextArea = new JTextPane() {
+            public boolean getScrollableTracksViewportWidth() {
+                return getSize().width < getParent().getSize().width;
+            }
+  
+            public void setSize(Dimension d) {
+                if (d.width < getParent().getSize().width) {
+                    d.width = getParent().getSize().width;
+                }
+                super.setSize(d);
+            }
+        };
         currentCreatingTextArea.setFont(
             new Font(Font.MONOSPACED, Font.PLAIN, Parameters.DEFAULT_FONT_SIZE));
+        currentCreatingTextArea.getStyledDocument()
+            .addUndoableEditListener(this::undoableEditHappened);
         currentCreatingPane = new NamedScrollPane(currentCreatingTextArea) {
             {
                 identifier = new EditorIdentifier(untitledNumber, file);
             }
             public Dimension getPreferredSize() {
                 return new Dimension(Parameters.FRAME_WIDTH - Parameters.DIRECTORY_PANEL_WIDTH, 
-                                    Parameters.FRAME_HEIGHT - Parameters.SHELL_PANEL_HEIGHT);
+                                     Parameters.FRAME_HEIGHT - Parameters.SHELL_PANEL_HEIGHT);
             }
         };
 
+        Prettifier.setPrettifierAction(currentCreatingTextArea);
         String title = currentCreatingPane.identifier.toString();
         editorPane.add(title, currentCreatingPane);
     }
@@ -211,20 +234,22 @@ public abstract class TextEditorPanel extends JPanel {
 
     public class NamedScrollPane extends JScrollPane {
         public EditorIdentifier identifier;
+        public JTextPane component;
 
         public NamedScrollPane(JComponent c) {
             super(c);
+            component = (JTextPane) c;
         }
     }
 
     private class EditorContentManager extends SwingWorker<Object, String> {
         private FileAgent agent;
         private boolean readOnly;
-        private JTextArea textArea;
+        private JTextPane textArea;
         private NamedScrollPane textPane;
         private SaveOption saveOption;
 
-        public EditorContentManager(JTextArea textArea, NamedScrollPane textPane) {
+        public EditorContentManager(JTextPane textArea, NamedScrollPane textPane) {
             this.textArea = textArea;
             this.textPane = textPane;
             agent = new FileAgent();
@@ -405,7 +430,23 @@ public abstract class TextEditorPanel extends JPanel {
         }
 
         public void process(List<String> chunks) {
-            textArea.setText(chunks.get(chunks.size() - 1));
+            var document = textArea.getStyledDocument();
+            try {
+                document.remove(0, document.getLength());
+                document.insertString(0, chunks.get(chunks.size() - 1), null);
+            } catch (BadLocationException ex) {
+                JOptionPane.showMessageDialog(
+                    TextEditorPanel.this, 
+                    "Error: Fail to open file!", 
+                    "Open file error", JOptionPane.ERROR_MESSAGE
+                );
+                synchronized (TextEditorPanel.this) {
+                    managerMap.remove(textPane.identifier);
+                    editorPane.remove(textPane);
+                }
+                return;
+            }
+            Prettifier.prettify(currentCreatingTextArea);
         }
 
         public void done() {

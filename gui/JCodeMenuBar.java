@@ -4,6 +4,7 @@ import java.io.*;
 import java.awt.Toolkit;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.undo.*;
 import gui.TextEditorPanel.*;
 
 public class JCodeMenuBar extends JMenuBar {
@@ -20,7 +21,16 @@ public class JCodeMenuBar extends JMenuBar {
     public JMenuItem saveAsItem;
     public JMenuItem closeItem;
     public JMenuItem exitItem;
+    public JMenuItem undoItem;
+    public JMenuItem redoItem;
+    public JMenuItem cutItem;
+    public JMenuItem copyItem;
+    public JMenuItem pasteItem;
     public JMenuItem newTerminalItem;
+
+    protected UndoAction undoAction;
+    protected RedoAction redoAction;
+    protected UndoManager undo = new UndoManager();
 
     public JCodeMenuBar(TextEditorPanel textEditorPanel,
                         DirectoryPanel directoryPanel,
@@ -29,6 +39,7 @@ public class JCodeMenuBar extends JMenuBar {
         this.directoryPanel = directoryPanel;
         this.shellPanel = shellPanel;
         initializeFileMenu();
+        initializeEditMenu();
         initializeTerminalMenu();
     }
 
@@ -154,6 +165,51 @@ public class JCodeMenuBar extends JMenuBar {
         add(fileMenu);
     }
 
+    private void initializeEditMenu() {
+        var editMenu = new JMenu("Edit");
+
+        undoItem = editMenu.add(undoAction = new UndoAction());
+        undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, MASK));
+
+        redoItem = editMenu.add(redoAction = new RedoAction());
+        redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, 
+                                                       MASK | KeyEvent.SHIFT_DOWN_MASK));
+
+        editMenu.addSeparator();
+
+        cutItem = editMenu.add(new AbstractAction("Cut") {
+            public void actionPerformed(ActionEvent e) {
+                var pane = (NamedScrollPane) 
+                    textEditorPanel.getEditorPane().getSelectedComponent();
+                pane.component.cut();
+            }
+        });
+        cutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, MASK));
+        cutItem.setEnabled(false);
+
+        copyItem = editMenu.add(new AbstractAction("Copy") {
+            public void actionPerformed(ActionEvent e) {
+                var pane = (NamedScrollPane) 
+                    textEditorPanel.getEditorPane().getSelectedComponent();
+                pane.component.copy();
+            }
+        });
+        copyItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, MASK));
+        copyItem.setEnabled(false);
+
+        pasteItem = editMenu.add(new AbstractAction("Paste") {
+            public void actionPerformed(ActionEvent e) {
+                var pane = (NamedScrollPane) 
+                    textEditorPanel.getEditorPane().getSelectedComponent();
+                pane.component.paste();
+            }
+        });
+        pasteItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, MASK));
+        pasteItem.setEnabled(false);
+
+        add(editMenu);
+    }
+
     private void initializeTerminalMenu() {
         var terminalMenu = new JMenu("Terminal");
         newTerminalItem = terminalMenu.add(new AbstractAction("New Terminal") {
@@ -191,6 +247,60 @@ public class JCodeMenuBar extends JMenuBar {
                         "Open folder error", JOptionPane.ERROR_MESSAGE
                     );
                 }
+            }
+        }
+    }
+
+    public class UndoAction extends AbstractAction {
+        public UndoAction() {
+            super("Undo");
+            setEnabled(false);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.undo();
+            } catch (CannotUndoException ex) {
+
+            }
+            updateUndoState();
+            redoAction.updateRedoState();
+        }
+ 
+        protected void updateUndoState() {
+            if (undo.canUndo()) {
+                setEnabled(true);
+                putValue(Action.NAME, undo.getUndoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, "Undo");
+            }
+        }
+    }
+ 
+    public class RedoAction extends AbstractAction {
+        public RedoAction() {
+            super("Redo");
+            setEnabled(false);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.redo();
+            } catch (CannotRedoException ex) {
+
+            }
+            updateRedoState();
+            undoAction.updateUndoState();
+        }
+ 
+        protected void updateRedoState() {
+            if (undo.canRedo()) {
+                setEnabled(true);
+                putValue(Action.NAME, undo.getRedoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, "Redo");
             }
         }
     }

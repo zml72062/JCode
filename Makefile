@@ -11,3 +11,7 @@ Main:
 .PHONY: clean
 clean:
 	rm -f *.class file/*.class gui/*.class shell/*.class
+
+.PHONY: cntlines
+cntlines:
+	find . -name '*.java' | xargs wc -l 
